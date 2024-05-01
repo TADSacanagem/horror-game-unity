@@ -5,39 +5,51 @@ using UnityEngine.EventSystems;
 
 public class Character : MonoBehaviour
 {
-
+    private Vector3 entradaJogador;
     private CharacterController characterController;
+    public float Speed = 4f;
+    private Transform myCamera;
 
-    public float Speed = 5f;
+    private bool estaNoChao;
+    [SerializeField]private Transform verificarChao;
+    [SerializeField]private LayerMask cenarioMask;
 
-    public float JumpSpeed = 5f;
+    [SerializeField]private float alturaPulo = 1f;
+    [SerializeField]private float gravidade = -1f;
+    private float velocidadeVertical;
 
-    public float gravity;
-    private Vector3 moveDirection;
-
-    // Start is called before the first frame update
-    void Start()
+    private void Awake()
     {
         characterController = GetComponent<CharacterController>();
+        myCamera = Camera.main.transform;
     }
 
     // Update is called once per frame
     void Update()
     {
-        Vector3 move = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Jump"), Input.GetAxis("Vertical"));
+        transform.eulerAngles = new Vector3(transform.eulerAngles.x, myCamera.eulerAngles.y, transform.eulerAngles.z);
 
-        characterController.Move(move * Time.deltaTime * Speed);
+        entradaJogador = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+        entradaJogador = transform.TransformDirection(entradaJogador);
 
-        //tentando colocar gravidade
-        moveDirection.y -= gravity * Time.deltaTime;
-        moveDirection = transform.TransformDirection(moveDirection);
-        characterController.Move(moveDirection);
+        characterController.Move(entradaJogador * Time.deltaTime * Speed);
 
-        if (characterController.isGrounded)
+        estaNoChao = Physics.CheckSphere(verificarChao.position, 1f, cenarioMask);
+
+        if (Input.GetKeyDown(KeyCode.Space) && estaNoChao)
         {
-            print("CharacterController is grounded");
+            velocidadeVertical = Mathf.Sqrt(alturaPulo *  -30f * gravidade);
         }
-        
+
+        if (estaNoChao && velocidadeVertical < 0)
+        {
+            velocidadeVertical = -1f;
+        }
+
+        velocidadeVertical += gravidade + Time.deltaTime;
+
+        characterController.Move(new Vector3(0, velocidadeVertical, 0) * Time.deltaTime);
+
 
     }
 }
