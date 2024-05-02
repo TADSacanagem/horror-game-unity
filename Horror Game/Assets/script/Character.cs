@@ -5,13 +5,16 @@ using UnityEngine.EventSystems;
 
 public class Character : MonoBehaviour
 {
+    [SerializeField]private Light flashLight;
+    [SerializeField]private AudioClip flashClick;
+
     private Vector3 entradaJogador;
     private CharacterController characterController;
     public float Speed = 4f;
     private Transform myCamera;
 
     private bool estaNoChao;
-    [SerializeField]private Transform verificarChao;
+    [SerializeField]private Transform verificadorChao;
     [SerializeField]private LayerMask cenarioMask;
 
     [SerializeField]private float alturaPulo = 1f;
@@ -34,7 +37,12 @@ public class Character : MonoBehaviour
 
         characterController.Move(entradaJogador * Time.deltaTime * Speed);
 
-        estaNoChao = Physics.CheckSphere(verificarChao.position, 1f, cenarioMask);
+        estaNoChao = Physics.CheckSphere(verificadorChao.position, 1f, cenarioMask);
+
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            characterController.Move(entradaJogador * Time.deltaTime * Speed * 2);
+        }
 
         if (Input.GetKeyDown(KeyCode.Space) && estaNoChao)
         {
@@ -44,6 +52,12 @@ public class Character : MonoBehaviour
         if (estaNoChao && velocidadeVertical < 0)
         {
             velocidadeVertical = -1f;
+        }
+
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            flashLight.enabled = !flashLight.enabled;
+            GetComponent<AudioSource>().PlayOneShot(flashClick, 1f);
         }
 
         velocidadeVertical += gravidade + Time.deltaTime;
